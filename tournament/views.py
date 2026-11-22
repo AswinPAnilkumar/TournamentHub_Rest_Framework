@@ -134,3 +134,17 @@ class TeamListCreateView(APIView):
             return Response({"Message":"Team Successfully created"})
         else:
             return Response(data=serializer_instance.errors)
+
+class TeamRetrieveUpdateDelete(APIView):
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self,request,tournament_id,team_id):
+        tournament_object = get_object_or_404(TournamentDb,id=tournament_id)
+        if tournament_object.created_by != request.user:
+            raise PermissionDenied("Only tournament owner can view teams")
+        team = get_object_or_404(TeamDb,id=team_id,tournament=tournament_object)
+        serializer_instance = TeamSerializer(team)
+        return Response(data=serializer_instance.data)
+    
+    

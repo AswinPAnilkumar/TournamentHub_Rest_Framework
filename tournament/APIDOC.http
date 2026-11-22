@@ -92,3 +92,9 @@ Authorization: Basic Unni:unni@123
 {
     "team_name" : "Sevens"
 }
+
+#TeamRetrieveUpdateDelete
+###
+GET http://127.0.0.1:8000/tournament/4/teams/3/
+Accept: application/json
+Authorization: Basic Aljin:aljin@123
