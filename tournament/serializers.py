@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from tournament.models import TournamentDb,TournamentMemberDb
+from tournament.models import TournamentDb,TournamentMemberDb,TeamDb
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -50,3 +50,25 @@ class TournamentMemberSerializer(serializers.ModelSerializer):
         user = User.objects.get(username=username)
         tournament = self.context['tournament']
         return TournamentMemberDb.objects.create(tournament=tournament,user=user)
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeamDb
+        fields = '__all__'
+        read_only_fields = ['id','created_by','created_at','tournament']
+    
+    def validate(self,data):
+        team_name = data.get('team_name')
+        user = self.context['created_by']
+        tournament = self.context['tournament']
+
+        if tournament.tournament_type != 'team':
+            raise serializers.ValidationError("Teams can only be created in team-based tournaments")
+        if TeamDb.objects.filter(tournament=tournament,created_by=user).exists():
+            raise serializers.ValidationError("You have already created a team")
+        existing_team = TeamDb.objects.filter(team_name__iexact=team_name,tournament=tournament)
+        # if self.instance:
+        #     existing_team = existing_team.exclude(id=self.instance.id)
+        if existing_team.exists():
+            raise serializers.ValidationError("This team name is already used")
+        return data

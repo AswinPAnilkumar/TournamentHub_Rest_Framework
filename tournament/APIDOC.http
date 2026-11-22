@@ -18,7 +18,7 @@ Accept: application/json
 ###
 GET http://127.0.0.1:8000/tournaments/
 Accept: application/json
-Authorization: Basic Adi:adi@123
+Authorization: Basic Aljin:aljin@123
 
 ###
 POST http://127.0.0.1:8000/tournaments/
@@ -26,30 +26,32 @@ Content-Type: application/json
 Authorization: Basic Aljin:aljin@123
 
 {
-    "tournament_title" : "Boxing Tournament",
-    "tournament_type" : "Single elemination",
+    "tournament_title" : "Football Tournament",
+    "tournament_type" : "team",
+    "tournament_format" : "Single elimination",
     "participant_limit" : 8,
-    "date" : "2026-12-02",
-    "location" : "Vypin"
+    "date" : "2026-12-05",
+    "location" : "Nehru Stadium"
 }
 
 #API for TournamentRetrieveUpdateDeleteView
 ###
-GET http://127.0.0.1:8000/tournaments/1/
+GET http://127.0.0.1:8000/tournaments/3/
 Accept: application/json
-Authorization: Basic Adi:adi@123
+Authorization: Basic Hari:hari@123
 
 ###
-PUT http://127.0.0.1:8000/tournaments/2/
+PUT http://127.0.0.1:8000/tournaments/3/
 Content-Type: application/json
-Authorization: Basic Adi:adi@123
+Authorization: Basic Hari:hari@123
 
 {
-    "tournament_title" : "Efootball Tournament",
-    "tournament_type" : "Single elemination",
-    "participant_limit" : 16,
-    "date" : "2026-11-10",
-    "location" : "Thrissur"
+      "tournament_title": "Boxing Tournament",
+    "tournament_type": "individual",
+    "tournament_format": "single elimination",
+    "participant_limit": 8,
+    "date": "2026-12-02",
+    "location": "Vypin"
 }
 
 ###
@@ -75,3 +77,18 @@ Authorization: Basic Adi:adi@123
 ###
 DELETE http://127.0.0.1:8000/tournament/1/members/3/
 Authorization: Basic Adi:adi@123
+
+#API for TeamListCreateView
+###
+GET http://127.0.0.1:8000/tournament/4/teams/
+Accept: application/json
+Authorization: Basic Aljin:aljin@123
+
+###
+POST http://127.0.0.1:8000/tournament/4/teams/
+Content-Type: application/json
+Authorization: Basic Unni:unni@123
+
+{
+    "team_name" : "Sevens"
+}

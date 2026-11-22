@@ -2,8 +2,8 @@ from django.shortcuts import render,get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from tournament.serializers import UserSerializer,TournamentSerializer,TournamentMemberSerializer
-from tournament.models import TournamentDb,TournamentMemberDb
+from tournament.serializers import UserSerializer,TournamentSerializer,TournamentMemberSerializer,TeamSerializer
+from tournament.models import TournamentDb,TournamentMemberDb,TeamDb
 from rest_framework import authentication,permissions,serializers
 from tournament.permissions import OwnerOnly
 from rest_framework.exceptions import PermissionDenied
@@ -114,3 +114,23 @@ class TournamentParticipantDeleteView(APIView):
         participant_object.delete()
         return Response({'Message':'Participant removed successfully'})
     
+class TeamListCreateView(APIView):
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [OwnerOnly]
+
+    def get(self,request,tournament_id):
+        tournament_object = get_object_or_404(TournamentDb,id=tournament_id)
+        if tournament_object.created_by != request.user:
+            raise PermissionDenied("Only tournament owner can view teams")
+        team = TeamDb.objects.filter(tournament=tournament_object)
+        serializer_instance = TeamSerializer(team,many=True)
+        return Response(data=serializer_instance.data)
+    
+    def post(self,request,tournament_id):
+        tournament_object = get_object_or_404(TournamentDb,id=tournament_id)
+        serializer_instance = TeamSerializer(data=request.data,context={'tournament' : tournament_object,'created_by' : request.user})
+        if serializer_instance.is_valid():
+            serializer_instance.save(tournament=tournament_object,created_by=request.user)
+            return Response({"Message":"Team Successfully created"})
+        else:
+            return Response(data=serializer_instance.errors)

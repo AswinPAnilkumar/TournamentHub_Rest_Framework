@@ -4,7 +4,9 @@ from django.contrib.auth.models import User
 # Create your models here.
 class TournamentDb(models.Model):
     tournament_title = models.CharField(max_length=100)
-    tournament_type = models.CharField(max_length=100)
+    type_choices = [('team','Team'),('individual','Individual')]
+    tournament_type = models.CharField(max_length=30,choices=type_choices)
+    tournament_format = models.CharField(max_length=100,default='single elimination')
     participant_limit = models.PositiveIntegerField()
     date = models.DateField()
     location = models.CharField(max_length=100)
@@ -28,3 +30,12 @@ class TournamentMemberDb(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.tournament.tournament_title}"
+
+class TeamDb(models.Model):
+    team_name = models.CharField(max_length=100)
+    tournament = models.ForeignKey(TournamentDb,on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User,on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.team_name

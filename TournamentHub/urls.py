@@ -26,4 +26,5 @@ urlpatterns = [
     path('tournaments/<int:pk>/',views.TournamentRetrieveUpdateDeleteView.as_view()),
     path('tournament/<int:tournament_id>/members/',views.TournamentParticipantView.as_view()),
     path('tournament/<int:tournament_id>/members/<int:participant_id>/',views.TournamentParticipantDeleteView.as_view()),
+    path('tournament/<int:tournament_id>/teams/',views.TeamListCreateView.as_view()),
 ]
