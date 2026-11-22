@@ -98,3 +98,17 @@ Authorization: Basic Unni:unni@123
 GET http://127.0.0.1:8000/tournament/4/teams/3/
 Accept: application/json
 Authorization: Basic Aljin:aljin@123
+
+###
+PUT http://127.0.0.1:8000/tournament/4/teams/3/
+Content-Type: application/json
+Authorization: Basic Aljin:aljin@123
+
+{
+    "team_name" : "Barcelona"
+}
+
+
+###
+DELETE http://127.0.0.1:8000/tournament/4/teams/3/
+Authorization: Basic Unni:unni@123

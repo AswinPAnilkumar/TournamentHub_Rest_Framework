@@ -64,11 +64,12 @@ class TeamSerializer(serializers.ModelSerializer):
 
         if tournament.tournament_type != 'team':
             raise serializers.ValidationError("Teams can only be created in team-based tournaments")
-        if TeamDb.objects.filter(tournament=tournament,created_by=user).exists():
-            raise serializers.ValidationError("You have already created a team")
+        if not self.instance:
+            if TeamDb.objects.filter(tournament=tournament,created_by=user).exists():
+                raise serializers.ValidationError("You have already created a team")
         existing_team = TeamDb.objects.filter(team_name__iexact=team_name,tournament=tournament)
-        # if self.instance:
-        #     existing_team = existing_team.exclude(id=self.instance.id)
+        if self.instance:
+            existing_team = existing_team.exclude(id=self.instance.id)
         if existing_team.exists():
             raise serializers.ValidationError("This team name is already used")
         return data

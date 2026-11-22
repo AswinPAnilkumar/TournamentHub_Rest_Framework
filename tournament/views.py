@@ -147,4 +147,22 @@ class TeamRetrieveUpdateDelete(APIView):
         serializer_instance = TeamSerializer(team)
         return Response(data=serializer_instance.data)
     
-    
+    def put(self,request,tournament_id,team_id):
+        tournament_object = get_object_or_404(TournamentDb,id=tournament_id)
+        team_object = get_object_or_404(TeamDb,id=team_id,tournament=tournament_object)
+        if team_object.created_by != request.user:
+            raise PermissionDenied('Only team creator can update the team')
+        serializer_instance = TeamSerializer(data=request.data,instance=team_object,context={'tournament': tournament_object,'created_by' : request.user})
+        if serializer_instance.is_valid():
+            serializer_instance.save()
+            return Response({"Message":"Team updated successfully"})
+        else:
+            return Response(data=serializer_instance.errors)
+
+    def delete(self,request,tournament_id,team_id):
+        tournament_object = get_object_or_404(TournamentDb,id=tournament_id)
+        team_object = get_object_or_404(TeamDb,id=team_id,tournament=tournament_object)
+        if team_object.created_by != request.user:
+            raise PermissionDenied('Only team creator can delete the team')
+        team_object.delete()
+        return Response({"Message":"Team successfully deleted"})
