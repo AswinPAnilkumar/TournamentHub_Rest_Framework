@@ -39,3 +39,17 @@ class TeamDb(models.Model):
 
     def __str__(self):
         return self.team_name
+    
+class TeamMemberDb(models.Model):
+    team = models.ForeignKey(TeamDb,on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+                        fields=['team', 'user'],
+                        name='unique_team_member')
+                    ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.team.team_name}"

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from tournament.models import TournamentDb,TournamentMemberDb,TeamDb
+from tournament.models import TournamentDb,TournamentMemberDb,TeamDb,TeamMemberDb
+from django.db import transaction
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -73,3 +74,41 @@ class TeamSerializer(serializers.ModelSerializer):
         if existing_team.exists():
             raise serializers.ValidationError("This team name is already used")
         return data
+        
+    def create(self, validated_data):
+        with transaction.atomic():
+            team = TeamDb.objects.create(**validated_data)
+            TeamMemberDb.objects.create(team=team,user=team.created_by)
+        return team
+
+class TeamMemberSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(write_only=True)
+    member_username = serializers.CharField(source='user.username',read_only=True)
+    member_user_id = serializers.IntegerField(source='user.id',read_only=True)
+    team_name = serializers.CharField(source='team.team_name',read_only=True)
+
+    class Meta:
+        model = TeamMemberDb
+        fields = ['id','team_name','username','member_username','member_user_id','joined_at']
+        read_only_fields = ['id','joined_at']
+
+    def validate(self,data):
+        username = data.get('username')
+        user = User.objects.filter(username=username).first()
+        team = self.context['team']
+
+        if user is None:
+            raise serializers.ValidationError('Not a registered user')
+        if team.created_by == user:
+            raise serializers.ValidationError('Team owner is already a member')
+        if TeamMemberDb.objects.filter(team=team,user=user).exists():
+            raise serializers.ValidationError('This user is already a member of this team')
+        if TeamMemberDb.objects.filter(user=user,team__tournament=team.tournament).exists():
+            raise serializers.ValidationError('This user is already a member of another team in this tournament')
+        return data
+
+    def create(self, validated_data):
+        username = validated_data.pop('username')
+        user = User.objects.get(username=username)
+        team = self.context['team']
+        return TeamMemberDb.objects.create(team=team,user=user)

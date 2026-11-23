@@ -9,12 +9,12 @@ Content-Type: application/json
     "password" : "unni@123"
 }
 
-#API for UsersListView
+#API for UsersListView******************************************************************************************
 ###
 GET http://127.0.0.1:8000/users/
 Accept: application/json
 
-#API for TournamentView
+#API for TournamentView*****************************************************************************************************
 ###
 GET http://127.0.0.1:8000/tournaments/
 Accept: application/json
@@ -34,7 +34,7 @@ Authorization: Basic Aljin:aljin@123
     "location" : "Nehru Stadium"
 }
 
-#API for TournamentRetrieveUpdateDeleteView
+#API for TournamentRetrieveUpdateDeleteView****************************************************************************************
 ###
 GET http://127.0.0.1:8000/tournaments/3/
 Accept: application/json
@@ -58,7 +58,7 @@ Authorization: Basic Hari:hari@123
 DELETE http://127.0.0.1:8000/tournaments/4/
 Authorization: Basic Aljin:aljin@123
 
-#API for TournamentMemberView
+#API for TournamentMemberView****************************************************************************************
 ###
 GET http://127.0.0.1:8000/tournament/1/members/
 Accept: application/json
@@ -73,12 +73,12 @@ Authorization: Basic Adi:adi@123
     "username":"Manu"
 }
 
-#API for TournamentParticipantDeleteView
+#API for TournamentParticipantDeleteView********************************************************************************
 ###
 DELETE http://127.0.0.1:8000/tournament/1/members/3/
 Authorization: Basic Adi:adi@123
 
-#API for TeamListCreateView
+#API for TeamListCreateView****************************************************************************************
 ###
 GET http://127.0.0.1:8000/tournament/4/teams/
 Accept: application/json
@@ -93,7 +93,7 @@ Authorization: Basic Unni:unni@123
     "team_name" : "Sevens"
 }
 
-#TeamRetrieveUpdateDelete
+#TeamRetrieveUpdateDelete*******************************************************************************************
 ###
 GET http://127.0.0.1:8000/tournament/4/teams/3/
 Accept: application/json
@@ -112,3 +112,23 @@ Authorization: Basic Aljin:aljin@123
 ###
 DELETE http://127.0.0.1:8000/tournament/4/teams/3/
 Authorization: Basic Unni:unni@123
+
+#API for TeamMemberListCreateView***************************************************************************************
+###
+GET http://127.0.0.1:8000/tournament/4/teams/2/members/
+Accept: application/json
+Authorization: Basic Hari:hari@123
+
+###
+POST http://127.0.0.1:8000/tournament/4/teams/2/members/
+Content-Type: application/json
+Authorization: Basic Hari:hari@123
+
+{
+    "username":"Adi"
+}
+
+#API for TeamMemberDeleteView************************************************************************************
+###
+DELETE http://127.0.0.1:8000/tournament/4/teams/2/members/3/
+Authorization: Basic Hari:hari@123

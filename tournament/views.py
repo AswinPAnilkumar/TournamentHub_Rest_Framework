@@ -2,8 +2,8 @@ from django.shortcuts import render,get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from tournament.serializers import UserSerializer,TournamentSerializer,TournamentMemberSerializer,TeamSerializer
-from tournament.models import TournamentDb,TournamentMemberDb,TeamDb
+from tournament.serializers import UserSerializer,TournamentSerializer,TournamentMemberSerializer,TeamSerializer,TeamMemberSerializer
+from tournament.models import TournamentDb,TournamentMemberDb,TeamDb,TeamMemberDb
 from rest_framework import authentication,permissions,serializers
 from tournament.permissions import OwnerOnly
 from rest_framework.exceptions import PermissionDenied
@@ -166,3 +166,47 @@ class TeamRetrieveUpdateDelete(APIView):
             raise PermissionDenied('Only team creator can delete the team')
         team_object.delete()
         return Response({"Message":"Team successfully deleted"})
+
+class TeamMemberListCreateView(APIView):
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self,request,tournament_id,team_id):
+        tournament= get_object_or_404(TournamentDb,id=tournament_id)
+        team = get_object_or_404(TeamDb,id=team_id,tournament=tournament)
+        is_owner = team.created_by == request.user
+        is_member = TeamMemberDb.objects.filter(team=team,user=request.user).exists()
+        if not (is_owner or is_member):
+            raise PermissionDenied("Only team owner or team members can view members")
+        members = TeamMemberDb.objects.filter(team=team)
+        serializer_instance = TeamMemberSerializer(members,many=True)
+        return Response(data=serializer_instance.data)
+
+    def post(self,request,tournament_id,team_id):
+        tournament= get_object_or_404(TournamentDb,id=tournament_id)
+        team = get_object_or_404(TeamDb,id=team_id,tournament=tournament)
+        if team.created_by != request.user:
+            raise PermissionDenied('Only team owner can add members')
+        serializer_instance = TeamMemberSerializer(data=request.data,context={'team':team})
+        if serializer_instance.is_valid():
+            serializer_instance.save()
+            return Response({"Message":"Member added successfully",
+                             "Team Details":serializer_instance.data})
+        else:
+            return Response(data=serializer_instance.errors)
+
+class TeamMemberDeleteView(APIView):
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [OwnerOnly]
+
+    def delete(self,request,tournament_id,team_id,member_id):
+        tournament= get_object_or_404(TournamentDb,id=tournament_id)
+        team = get_object_or_404(TeamDb,id=team_id,tournament=tournament)
+        if team.created_by != request.user:
+            raise PermissionDenied('Only team owner can remove members')
+        member = get_object_or_404(TeamMemberDb,id=member_id,team=team)
+        if member.user == team.created_by:
+            raise PermissionDenied('Team owner cannot be removed')
+        member.delete()
+        return Response({"Message":"Member successfully removed"})
+
