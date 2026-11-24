@@ -2,8 +2,8 @@ from django.shortcuts import render,get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from tournament.serializers import UserSerializer,TournamentSerializer,TournamentMemberSerializer,TeamSerializer,TeamMemberSerializer
-from tournament.models import TournamentDb,TournamentMemberDb,TeamDb,TeamMemberDb
+from tournament.serializers import UserSerializer,TournamentSerializer,TournamentMemberSerializer,TeamSerializer,TeamMemberSerializer,MatchSerializer,MatchResultSerializer
+from tournament.models import TournamentDb,TournamentMemberDb,TeamDb,TeamMemberDb,MatchDb
 from rest_framework import authentication,permissions,serializers
 from tournament.permissions import OwnerOnly
 from rest_framework.exceptions import PermissionDenied
@@ -210,3 +210,63 @@ class TeamMemberDeleteView(APIView):
         member.delete()
         return Response({"Message":"Member successfully removed"})
 
+class MatchListCreateView(APIView):
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [OwnerOnly]
+
+    def get(self,request,tournament_id):
+        tournament = get_object_or_404(TournamentDb,id=tournament_id)
+        if tournament.created_by != request.user:
+            raise PermissionDenied('Only tournament owner can view matches')
+        matches = MatchDb.objects.filter(tournament=tournament)
+        serializer_instance = MatchSerializer(matches,many=True)
+        return Response(data=serializer_instance.data)
+    
+    def post(self,request,tournament_id):
+        tournament = get_object_or_404(TournamentDb,id=tournament_id)
+        if tournament.created_by != request.user:
+            raise PermissionDenied('Only tournament owner can add matches')
+        serializer_instance = MatchSerializer(data=request.data,context={'tournament': tournament})
+        if serializer_instance.is_valid():
+            serializer_instance.save(tournament=tournament)
+            return Response({"Message":"Match Created","Match Details":serializer_instance.data})
+        else:
+            return Response(data=serializer_instance.errors)
+
+class MatchResultUpdateView(APIView):
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [OwnerOnly]
+
+    def put(self, request, tournament_id, match_id):
+        tournament = get_object_or_404(TournamentDb,id=tournament_id)
+        if tournament.created_by != request.user:
+            raise PermissionDenied('Only tournament owner can update matches')
+        match = get_object_or_404(MatchDb,id=match_id,tournament=tournament)
+        serializer_instance = MatchResultSerializer(data=request.data,instance=match)
+        if serializer_instance.is_valid():
+            serializer_instance.save()
+            return Response({"Message":"Match Updated Succcessfully","Match Details":serializer_instance.data})
+        else:
+            return Response(data=serializer_instance.errors)
+
+class MatchRetrieveDelete(APIView):
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [OwnerOnly]
+
+    def get(self, request, tournament_id, match_id):
+        tournament = get_object_or_404(TournamentDb,id=tournament_id)
+        if tournament.created_by != request.user:
+            raise PermissionDenied('Only tournament owner can update matches')
+        match = get_object_or_404(MatchDb,id=match_id,tournament=tournament)
+        serializer_instance = MatchSerializer(match)
+        return Response(data=serializer_instance.data)
+
+    def delete(self,request,tournament_id,match_id):
+        tournament = get_object_or_404(TournamentDb,id=tournament_id)
+        if tournament.created_by != request.user:
+            raise PermissionDenied('Only tournament owner can update matches')
+        match = get_object_or_404(MatchDb,id=match_id,tournament=tournament)
+        if match.status != 'upcoming':
+            raise serializers.ValidationError('Only upcoming matches can be deleted')
+        match.delete()
+        return Response({"Message":"Match Deleted Successfully"})

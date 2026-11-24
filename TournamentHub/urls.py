@@ -30,4 +30,7 @@ urlpatterns = [
     path('tournament/<int:tournament_id>/teams/<int:team_id>/',views.TeamRetrieveUpdateDelete.as_view()),
     path('tournament/<int:tournament_id>/teams/<int:team_id>/members/',views.TeamMemberListCreateView.as_view()),
     path('tournament/<int:tournament_id>/teams/<int:team_id>/members/<int:member_id>/',views.TeamMemberDeleteView.as_view()),
+    path('tournament/<int:tournament_id>/matches/',views.MatchListCreateView.as_view()),
+    path('tournament/<int:tournament_id>/matches/<int:match_id>/result/',views.MatchResultUpdateView.as_view()),
+    path('tournament/<int:tournament_id>/matches/<int:match_id>/',views.MatchRetrieveDelete.as_view())
 ]

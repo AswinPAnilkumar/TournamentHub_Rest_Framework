@@ -4,9 +4,9 @@ POST http://127.0.0.1:8000/register/
 Content-Type: application/json
 
 {
-    "username" : "Unni",
-    "email" : "unni@gmail.com",
-    "password" : "unni@123"
+    "username" : "Pathu",
+    "email" : "pathu@gmail.com",
+    "password" : "pathu@123"
 }
 
 #API for UsersListView******************************************************************************************
@@ -18,7 +18,7 @@ Accept: application/json
 ###
 GET http://127.0.0.1:8000/tournaments/
 Accept: application/json
-Authorization: Basic Aljin:aljin@123
+Authorization: Basic Hari:hari@123
 
 ###
 POST http://127.0.0.1:8000/tournaments/
@@ -36,22 +36,24 @@ Authorization: Basic Aljin:aljin@123
 
 #API for TournamentRetrieveUpdateDeleteView****************************************************************************************
 ###
-GET http://127.0.0.1:8000/tournaments/3/
+GET http://127.0.0.1:8000/tournaments/4/
 Accept: application/json
-Authorization: Basic Hari:hari@123
+Authorization: Basic Aljin:aljin@123
 
 ###
-PUT http://127.0.0.1:8000/tournaments/3/
+PUT http://127.0.0.1:8000/tournaments/4/
 Content-Type: application/json
-Authorization: Basic Hari:hari@123
+Authorization: Basic Aljin:aljin@123
 
 {
-      "tournament_title": "Boxing Tournament",
-    "tournament_type": "individual",
-    "tournament_format": "single elimination",
+    "tournament_title": "Football Tournament",
+    "tournament_type": "team",
+    "tournament_format": "Single elimination",
     "participant_limit": 8,
-    "date": "2026-12-02",
-    "location": "Vypin"
+    "date": "2026-12-05",
+    "location": "Nehru Stadium",
+    "status": "completed",
+    "tournament_winner": "Sporting"
 }
 
 ###
@@ -65,12 +67,12 @@ Accept: application/json
 Authorization: Basic Adi:adi@123
 
 ###
-POST http://127.0.0.1:8000/tournament/1/members/
+POST http://127.0.0.1:8000/tournament/3/members/
 Content-Type: application/json
-Authorization: Basic Adi:adi@123
+Authorization: Basic Hari:hari@123
 
 {
-    "username":"Manu"
+    "username":"Winny"
 }
 
 #API for TournamentParticipantDeleteView********************************************************************************
@@ -87,10 +89,10 @@ Authorization: Basic Aljin:aljin@123
 ###
 POST http://127.0.0.1:8000/tournament/4/teams/
 Content-Type: application/json
-Authorization: Basic Unni:unni@123
+Authorization: Basic Ajo:ajo@123
 
 {
-    "team_name" : "Sevens"
+    "team_name" : "Tottenham"
 }
 
 #TeamRetrieveUpdateDelete*******************************************************************************************
@@ -125,10 +127,50 @@ Content-Type: application/json
 Authorization: Basic Hari:hari@123
 
 {
-    "username":"Adi"
+    "username":"Unni"
 }
 
 #API for TeamMemberDeleteView************************************************************************************
 ###
 DELETE http://127.0.0.1:8000/tournament/4/teams/2/members/3/
+Authorization: Basic Hari:hari@123
+
+#API for MatchListCreateView**************************************************************************************
+###
+GET http://127.0.0.1:8000/tournament/4/matches/
+Accept: application/json
+Authorization: Basic Aljin:aljin@123
+
+###
+POST http://127.0.0.1:8000/tournament/3/matches/
+Content-Type: application/json
+Authorization: Basic Hari:hari@123
+
+{
+    "player1": 1,
+    "player2": 7,
+    "round": 1,
+    "match_date": "2026-11-29",
+    "match_time": "10:00:00"
+}
+
+#API for MatchResultUpdateView**********************************************************************************
+###
+PUT http://127.0.0.1:8000/tournament/4/matches/7/result/
+Content-Type: application/json
+Authorization: Basic Aljin:aljin@123
+
+{
+    "score1": 5,
+    "score2": 3
+}
+
+#API for MatchRetrieveDelete**********************************************************************************
+###
+GET http://127.0.0.1:8000/tournament/4/matches/5/
+Accept: application/json
+Authorization: Basic Aljin:aljin@123
+
+###
+DELETE http://127.0.0.1:8000/tournament/3/matches/8/
 Authorization: Basic Hari:hari@123

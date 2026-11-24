@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from tournament.models import TournamentDb,TournamentMemberDb,TeamDb,TeamMemberDb
+from tournament.models import TournamentDb,TournamentMemberDb,TeamDb,TeamMemberDb,MatchDb
 from django.db import transaction
 
 
@@ -112,3 +112,73 @@ class TeamMemberSerializer(serializers.ModelSerializer):
         user = User.objects.get(username=username)
         team = self.context['team']
         return TeamMemberDb.objects.create(team=team,user=user)
+
+class MatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =MatchDb
+        fields ='__all__'
+        read_only_fields = ['id','tournament','score1','score2','winner_player','winner_team','status','created_at']
+
+    def validate(self, data):
+        tournament = self.context['tournament']
+        team1 = data.get('team1')
+        team2 = data.get('team2')
+        player1 = data.get('player1')
+        player2 = data.get('player2')
+
+        if tournament.tournament_type == 'team':
+            if player1 or player2:
+                raise serializers.ValidationError("Player fields are not allowed in team tournaments")
+            if team1.tournament != tournament or team2.tournament != tournament:
+                raise serializers.ValidationError("Both teams must be registered to this tournament")
+            if MatchDb.objects.filter(tournament=tournament,round=data.get('round'),team1=team1).exists() or MatchDb.objects.filter(tournament=tournament,round=data.get('round'),team2=team1).exists():
+                raise serializers.ValidationError("This team is already assigned to a match in this round")
+            if MatchDb.objects.filter(tournament=tournament,round=data.get('round'),team1=team2).exists() or MatchDb.objects.filter(tournament=tournament,round=data.get('round'),team2=team2).exists():
+                raise serializers.ValidationError("This team is already assigned to a match in this round")
+            if team1 == team2:
+                raise serializers.ValidationError("Both participants teams are same")
+
+        elif tournament.tournament_type == 'individual':
+            if team1 or team2:
+                raise serializers.ValidationError("Team fields are not allowed in individual tournaments")
+            if not TournamentMemberDb.objects.filter(tournament=tournament,user=player1).exists() or not TournamentMemberDb.objects.filter(tournament=tournament,user=player2).exists():
+                raise serializers.ValidationError("Both players must be registered in this tournament")
+            if MatchDb.objects.filter(tournament=tournament,round=data.get('round'),player1=player1).exists() or MatchDb.objects.filter(tournament=tournament,round=data.get('round'),player2=player1).exists():
+                raise serializers.ValidationError("This player is already assigned to a match in this round")
+            if MatchDb.objects.filter(tournament=tournament,round=data.get('round'),player1=player2).exists() or MatchDb.objects.filter(tournament=tournament,round=data.get('round'),player2=player2).exists():
+                raise serializers.ValidationError("This player is already assigned to a match in this round")
+            if player1 == player2:
+                raise serializers.ValidationError("Both participants players are same")
+        
+        return data
+
+class MatchResultSerializer(serializers.ModelSerializer):
+    score1 = serializers.IntegerField(min_value=0)
+    score2 = serializers.IntegerField(min_value=0)
+
+    class Meta:
+        model = MatchDb
+        fields = '__all__'
+        read_only_fields = ['id','tournament','team1','team2','player1','player2','round','match_date','match_time','winner_player','winner_team','status','created_at']
+
+    def validate(self,data):
+        if data['score1'] == data['score2']:
+            raise serializers.ValidationError('Match shouldnt be end in draw')
+        return data
+
+    def update(self,instance,validated_data):
+        instance.score1 = validated_data['score1']
+        instance.score2 = validated_data['score2']
+        if instance.tournament.tournament_type == 'team':
+            if instance.score1 > instance.score2:
+                instance.winner_team = instance.team1
+            else:
+                instance.winner_team = instance.team2
+        else:
+            if instance.score1 > instance.score2:
+                instance.winner_player = instance.player1
+            else:
+                instance.winner_player = instance.player2
+        instance.status = 'completed'
+        instance.save()
+        return instance
